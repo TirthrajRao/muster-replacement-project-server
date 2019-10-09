@@ -4,7 +4,7 @@ var Schema = mongoose.Schema;
 
 var AttendenceSchema = new Schema({
 	userId: { type: Schema.Types.ObjectId , ref: 'User' , autopopulate: true},
-	date: {type: String},
+	date: {type: Date},
 	status: {type: String , default: "absent"},
 	diffrence: {type: String , default: "-"}, 
 	timeLog: [{
