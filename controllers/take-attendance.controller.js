@@ -53,7 +53,8 @@ take_attendance.fillAttendance = function(req , res){
 						presentTime = moment().tz("Asia/Calcutta|Asia/Kolkata").format('h:mm:ss a'); 
 						console.log("the persent time whewn we add the new attendence ========>" , presentTime);
 						var arr = {
-							in :  moment().tz("Asia/Calcutta|Asia/Kolkata").format('h:mm:ss a')
+							// in :  moment().tz("Asia/Calcutta|Asia/Kolkata").format('h:mm:ss a')
+							in :  moment().utcOffset("+05:30").format('h:mm:ss a')
 						};
 						foundAttendence.status = "Present";
 						foundAttendence.timeLog.push(arr);
@@ -69,7 +70,7 @@ take_attendance.fillAttendance = function(req , res){
 						});
 					}
 					else{
-						foundAttendence.timeLog[timeLogLength].out = moment().tz("Asia/Calcutta|Asia/Kolkata").format('h:mm:ss a');
+						foundAttendence.timeLog[timeLogLength].out = /*moment().tz("Asia/Calcutta|Asia/Kolkata").format('h:mm:ss a')*/moment().utcOffset("+05:30").format('h:mm:ss a');
 						foundAttendence = await attendanceFunction.calculateDifference(foundAttendence , timeLogLength);
 						attendanceModel.findOneAndUpdate({date: foundAttendence.date , userId: foundAttendence.userId._id} , {$set: foundAttendence} , {upsert: true , new: true} , (err , updatedLog)=>{
 							if(err){

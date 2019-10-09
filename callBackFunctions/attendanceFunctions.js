@@ -7,12 +7,12 @@ const attendanceFunctions = {
 		console.log("body in new attendence ===============+>" , body);
 		body = {
 			day : moment(new Date(), "YYYY-MM-DD HH:mm:ss").format('dddd'),
-			time: moment().tz("Asia/Calcutta|Asia/Kolkata").format('h:mm:ss a'),
+			time:/* moment().tz("Asia/Calcutta|Asia/Kolkata").format('h:mm:ss a')*/  moment().utcOffset("+05:30").format('h:mm:ss a'),
 			status: "Present",
 			userId : body.userId,
 			date : /*moment(new Date()).format("DD/MM/YYYY")*/ new Date().toISOString().split("T")[0] + "T18:30:00.000Z",
 			timeLog : {
-				in : /*moment().format('h:mm:ss a')*/moment().tz("Asia/Calcutta|Asia/Kolkata").format('h:mm:ss a')
+				in : /*moment().format('h:mm:ss a')*//*moment().tz("Asia/Calcutta|Asia/Kolkata").format('h:mm:ss a')*/moment().utcOffset("+05:30").format('h:mm:ss a')
 			}
 		}
 		console.log("proper working =======> body " , body);
