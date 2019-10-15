@@ -111,20 +111,25 @@ take_attendance.fillAttendance = function(req , res){
 take_attendance.getAttendanceById =  function(req , res){
 	if(req.body.days){
 		console.log("You are in getAttendanceById function if days are given" , req.body.userId);
-		console.log("From" , moment(new Date()).subtract(5,'d').format("DD/MM/YYYY"));
-		console.log("To" , moment(new Date()).format("DD/MM/YYYY"));
-		attendanceModel.aggregate([
-		{
-			$match : {  userId : ObjectId(req.body.userId)  } 	
-		}
-		])
-		.sort({_id : -1})
-		.limit(5)
+		var someDate = new Date();
+		var numberOfDaysToAdd = -5;
+		someDate.setDate(someDate.getDate() + numberOfDaysToAdd); 
+		console.log("to" , new Date().toISOString().split("T")[0] + "T18:30:00.000Z");
+		console.log("from" , someDate.toISOString().split("T")[0] + "T18:30:00.000Z");
+		var from = someDate.toISOString().split("T")[0] + "T18:30:00.000Z";
+		var to =  new Date().toISOString().split("T")[0] + "T18:30:00.000Z"
+		// console.log("From" , moment(new Date()).subtract(5,'d').format("DD/MM/YYYY"));
+		// console.log("To" , moment(new Date()).format("DD/MM/YYYY"));
+		attendanceModel.find(
+			{ date : { $gte: from  , $lte :  to } , userId : { $eq : req.body.userId } }
+		)
+		/*.sort({_id : -1})
+		.limit(5)*/
 		.exec((err , foundLogs)=>{
 			if(err){
 				res.send(err);
 			}else{
-				console.log("foundLogs of last five days IF =======++>" , foundLogs)
+				// console.log("foundLogs of last five days IF =======++>" , foundLogs)
 				res.send(foundLogs);
 			}
 		});
@@ -145,28 +150,8 @@ take_attendance.getAttendanceById =  function(req , res){
 }
 
 take_attendance.getCurrentMonthLogCount = function(req , res){
-	return(res.send("100"))
-	/*if(!req.body.date){
-		date = moment(new Date()).format("DD/MM/YYYY").split("/")[1];
-		date = new RegExp('\/'+ moment(new Date()).format("DD/MM/YYYY").split("/")[1] + '\/','g');
-		console.log(date);
-	}
-	else{
-		date = moment(req.body.date).format("DD/MM/YYYY").split("/")[1];
-		date = new RegExp('\/'+ date + '\/','g');'\/'+ date + '\/';
-		console.log(date);
-	}
-	console.log("IN the count =====>" , req.body.userId);
-	attendanceModel.find( { date: { $regex: date } , userId : req.body.userId } )
-	.sort({_id : 1})
-		.exec((err , foundLogs)=>{
-			if(err){
-				res.send(err);
-			}else{
-				console.log("foundLogs of last five days count " , foundLogs.length);
-				res.json({length : foundLogs.length});
-			}
-		});	*/
+	
+	return(res.send("100"));
 }
 take_attendance.getCurrentMonthLogByPage = function(req , res){
 	console.log("body of pagination " , req.body);
@@ -202,12 +187,12 @@ take_attendance.getCurrentMonthLogByPage = function(req , res){
 			if(err){
 				res.send(err);
 			}else{
-				foundLogs = foundLogs.filter(function(obj){
-					console.log(" ================++> " , obj.date.toISOString())
-					if(obj.date.toISOString().match(date)){
-						return obj;
-					}
-				});
+				// foundLogs = foundLogs.filter(function(obj){
+				// 	console.log(" ================++> " , obj.date.toISOString())
+				// 	if(obj.date.toISOString().match(date)){
+				// 		return obj;
+				// 	}
+				// });
 				res.send(foundLogs);
 			}
 		});	
@@ -293,13 +278,14 @@ take_attendance.getLogBySingleDate = function(req , res){
 
 take_attendance.getTodaysattendance = function(req , res){
 	var newDate = new Date().toISOString().split("T")[0] + "T18:30:00.000Z";
-	attendanceModel.find({ date : newDate})
+	attendanceModel.find({ date : newDate })
 	.populate('userId')
 	.exec((err , foundLogs)=>{
 		if(err){
 			res.send(err);
 		}else{
-			userModel.find((err , totalUser)=>{
+			userModel.find({userRole : { $ne : 'admin' }})
+			.exec((err , totalUser)=>{
 				if(err){
 					res.status(500).send(err);
 				}else{

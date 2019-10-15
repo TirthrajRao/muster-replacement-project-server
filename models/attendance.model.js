@@ -3,6 +3,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var AttendenceSchema = new Schema({
+	changed  : {type: String , default : null},
 	userId: { type: Schema.Types.ObjectId , ref: 'User' , autopopulate: true},
 	date: {type: Date},
 	status: {type: String , default: "absent"},
