@@ -126,12 +126,23 @@ take_attendance.getAttendanceById =  function(req , res){
 		)
 		/*.sort({_id : -1})
 		.limit(5)*/
-		.exec((err , foundLogs)=>{
+		.exec(async(err , foundLogs)=>{
 			if(err){
 				res.send(err);
-			}else{
+			}else if(foundLogs.length){
 				// console.log("foundLogs of last five days IF =======++>" , foundLogs)
-				res.send(foundLogs);
+				var got = await  attendanceFunction.calculateTimeLog(foundLogs , 5 , foundLogs[0].date , foundLogs[foundLogs.length - 1].date);
+				// console.log("Got ==========================>" , got);
+
+				console.log("Found logs of get Attendance By Id" , foundLogs);
+				res.json({
+					"foundLogs" : foundLogs,
+					"TotalHoursCompleted" : got.TotalHoursCompleted,
+					"TotalHoursToComplete" : got.TotalHoursToComplete
+				});
+				// res.send(foundLogs);
+			}else{
+				res.json({"message" : "No logs found"})
 			}
 		});
 	}else{
@@ -184,7 +195,7 @@ take_attendance.getCurrentMonthLogByPage = function(req , res){
 		.sort({_id : -1})
 		.limit(1 * 5)
 		.skip(skip)
-		.exec((err , foundLogs)=>{
+		.exec(async(err , foundLogs)=>{
 			if(err){
 				res.send(err);
 			}else{
@@ -194,7 +205,16 @@ take_attendance.getCurrentMonthLogByPage = function(req , res){
 				// 		return obj;
 				// 	}
 				// });
-				res.send(foundLogs);
+				var got = await  attendanceFunction.calculateTimeLog(foundLogs , 5 , foundLogs[0].date , foundLogs[foundLogs.length - 1].date);
+				// console.log("Got ==========================>" , got);
+
+
+				res.json({
+					"foundLogs" : foundLogs,
+					"TotalHoursCompleted" : got.TotalHoursCompleted,
+					"TotalHoursToComplete" : got.TotalHoursToComplete
+				});
+				// res.send(foundLogs);
 			}
 		});	
 	}
@@ -208,61 +228,6 @@ take_attendance.getLogByName = function(req , res){
 	console.log(req.params);
 
 }
-
-/*take_attendance.getLogsBetweenDates = function(req , res){
-	console.log(req.body);
-	attendanceModel.aggregate([
-	{									
-		$match : { date : { $gte: moment(req.body.firstDate).format("DD/MM/YYYY"), $lte : moment(req.body.secondDate).format("DD/MM/YYYY") } } 	
-	},	
-	{
-		$group: {
-			_id: "$Date",
-			entry: {
-				$push: "$$ROOT"
-			}
-		}
-	}
-	])
-	.sort({_id : 1})
-	.exec((err , foundLogs)=>{
-		if(err){
-			res.send(err);
-		}else{
-			res.send(foundLogs);
-		}
-	});
-}*/
-/*take_attendance.getLogsByNameBySingleDate = function(req , res){
-	console.log("getLogsByNameBySingleDate ==>" , req.body );
-	attendanceModel.find({
-		 date : { $eq: moment(req.body.firstDate).format("DD/MM/YYYY")} , userId : { $eq : req.body.id } 
-	})
-	.sort({_id : 1})
-	.exec((err , foundLogs)=>{
-		if(err){
-			res.send(err);
-		}else{
-			res.send(foundLogs);
-		}
-	});
-
-}*/
-/*take_attendance.getLogsByNameBetweenDates = function(req , res){
-	console.log("Helloooo");
-	console.log("getLogsByNameBetweenDates" , req.body);
-	attendanceModel.find(
-	{ date : { $gte: moment(req.body.firstDate).format("DD/MM/YYYY")  , $lte :  moment(req.body.secondDate).format("DD/MM/YYYY") } , userId : { $eq : req.body.id } })
-	.sort({_id : 1})
-	.exec((err , foundLogs)=>{
-		if(err){
-			res.send(err);
-		}else{
-			res.send(foundLogs);
-		}
-	});
-}*/
-// Needed
 
 take_attendance.getLogBySingleDate = function(req , res){
 	// console.log(" ==========+++++>getLogBySingleDate " , new Date(req.body.firstDate).toISOString().split("T")[0] + "T18:30:00.000Z");
@@ -304,19 +269,35 @@ take_attendance.getReportById = function(req , res){
 		var part = req.body.startDate.split("T")[1];
 		endDate = req.body.endDate.split("T")[0];
 		endDate = endDate + "T"  + part;
-	}
+	}else{
+        endDate = req.body.endDate +  "T18:30:00.000Z"; ;
+        req.body.startDate = req.body.startDate +  "T18:30:00.000Z";
+    }
+
 	console.log("In the success" ,  req.body.startDate , endDate);
 	attendanceModel.find(
 		{ date : { $gte: req.body.startDate  , $lte :  endDate } , userId : { $eq : req.body.userId } }
 	)
 	.sort({_id : 1})
-	.exec((err , foundLogs)=>{
+	.exec(async (err , foundLogs)=>{
 		if(err){
 			console.log("getting error in line 302",err);
 			res.send(err);
 		}else if(foundLogs.length){
-			console.log("getting data on line 282", foundLogs);
-			res.send(foundLogs);
+			// console.log("getting data on line 282", foundLogs);
+			// var momentObj = moment(req.body.startDate);
+			var StartingDate = moment(req.body.startDate);
+			var momentObjEnd = moment(endDate);
+			// var momentObjend = moment(momentObj).format('YYYY-MM-DD ');
+			// console.log("getting data on line 282" ,momentObjStrart , momentObjend);
+        	var resultHours = momentObjEnd.diff(StartingDate, 'days');
+        	// console.log("result hours ===========++>", resultHours);
+        	// var resultHours = endDate.diff(req.body.startDate, 'days', true);
+			var got = await  attendanceFunction.calculateTimeLog(foundLogs , resultHours , req.body.startDate , endDate);
+			// console.log("Got ==========================>" , got);
+
+			got['foundLogs'] = foundLogs;
+			res.send(got);
 		}else{
 			console.log("getting nothing")
 			res.send([]);
