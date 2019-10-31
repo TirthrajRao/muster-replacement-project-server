@@ -269,9 +269,15 @@ take_attendance.getReportById = function(req , res){
 		var part = req.body.startDate.split("T")[1];
 		endDate = req.body.endDate.split("T")[0];
 		endDate = endDate + "T"  + part;
+		var StartingDate = moment(req.body.startDate);
+        var momentObjEnd = moment(endDate);
+        var resultHours = momentObjEnd.diff(StartingDate, 'days');
 	}else{
         endDate = req.body.endDate +  "T18:30:00.000Z"; ;
         req.body.startDate = req.body.startDate +  "T18:30:00.000Z";
+        var StartingDate = moment(req.body.startDate);
+        var momentObjEnd = moment(endDate);
+        var resultHours = momentObjEnd.diff(StartingDate, 'days') + 1;
     }
 
 	console.log("In the success" ,  req.body.startDate , endDate);
@@ -286,11 +292,11 @@ take_attendance.getReportById = function(req , res){
 		}else if(foundLogs.length){
 			// console.log("getting data on line 282", foundLogs);
 			// var momentObj = moment(req.body.startDate);
-			var StartingDate = moment(req.body.startDate);
-			var momentObjEnd = moment(endDate);
+			// var StartingDate = moment(req.body.startDate);
+			// var momentObjEnd = moment(endDate);
 			// var momentObjend = moment(momentObj).format('YYYY-MM-DD ');
 			// console.log("getting data on line 282" ,momentObjStrart , momentObjend);
-        	var resultHours = momentObjEnd.diff(StartingDate, 'days');
+        	// var resultHours = momentObjEnd.diff(StartingDate, 'days');
         	// console.log("result hours ===========++>", resultHours);
         	// var resultHours = endDate.diff(req.body.startDate, 'days', true);
 			var got = await  attendanceFunction.calculateTimeLog(foundLogs , resultHours , req.body.startDate , endDate);
