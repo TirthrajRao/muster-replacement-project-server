@@ -7,6 +7,7 @@ const http = require("http");
 const path = require("path");
 const https = require('https');
 const fs = require('fs');
+var BSONStream = require('bson-stream');
 
 const attendanceModel = require('./models/attendance.model');
 //import controllers
@@ -38,7 +39,7 @@ app.use('/user' , userRoutes);
 
 
 //script to change existing value of database to new value
-app.get("/change" , function(req , res){
+app.get("/change" ,function(req , res){
 	attendanceModel.find({}).exec( (err , foundLogs)=>{
 		if(err){
 			res.status(404).send(err)
@@ -58,7 +59,45 @@ app.get("/change" , function(req , res){
 		}
 	});
 });
-
+app.get("/bson-database" ,function(req , res){
+	
+	fs.readFile('./database/attendences.json', (err, data) => {
+		if (err) throw err;
+		let student = JSON.parse(data);
+		// console.log(student);
+		// res.send(student);
+		attendanceModel.find((err , foundLogs)=>{
+			if(err){
+				res.send(err);
+			}else{
+				var newData = [];
+				console.log("new data ===>" , student[82])
+				// res.send(foundLogs);
+				student.forEach(function(studentlogs , index){
+					// foundLogs.forEach(function(dataBaseLogs){
+						if(studentlogs['date']['$date'] == undefined/*dataBaseLogs['date']*/){
+							// if((studentlogs.userId['$oid'] == dataBaseLogs.userId._id)){
+								// console.log(studentlogs['date']  , studentlogs.userId['$oid'],"=====" ,dataBaseLogs['date'])
+								// console.log(studentlogs['date']['$date'] ,'=== ', studentlogs['date'] , "===" ,index , studentlogs.userId['$oid']);
+								// console.log("Match found ======+++>" , foundLogs[index].date , foundLogs[index].userId._id )
+							// }
+						}else{
+								studentlogs['_id'] = studentlogs._id['$oid'];
+								studentlogs['userId'] = studentlogs.userId['$oid'];
+								studentlogs['date'] = studentlogs['date']['$date'];
+								studentlogs['changed'] = "done";
+								newData.push(studentlogs);
+								// console.log("In else" , studentlogs['date']['$date'] ,'=== ', studentlogs['date'] , "Match" , studentlogs.userId['$oid'] ,index );
+						}
+					// });
+				});
+				console.log("ne ware ====>" , newData[0]);
+				attendanceModel.insertMany(newData , { ordered: false });
+				res.json({"newData" : newData , "length" : newData.length});
+			}
+		});
+	});
+	});
 
 app.listen(4000);
 

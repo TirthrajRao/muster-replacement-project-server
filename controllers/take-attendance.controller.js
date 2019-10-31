@@ -39,7 +39,7 @@ take_attendance.fillAttendance = function(req , res){
 			console.log("Date ==============+++++>" , new Date().toISOString() , "Only Fsyr ====>" , date);
 			var newDate = new Date().toISOString().split("T")[0] + "T18:30:00.000Z";
 			try{
-			attendanceModel.findOne({userId: req.body.userId , date: /*{ $regex: date }*//*moment(new Date()).format("DD/MM/YYYY")*//*new Date().toISOString()*/ newDate})
+			attendanceModel.findOne({userId: req.body.userId , date: newDate})
 			.populate('userId')
 			.exec( async (err , foundAttendence)=>{
 				if(err){
@@ -109,6 +109,7 @@ take_attendance.fillAttendance = function(req , res){
 }
 
 take_attendance.getAttendanceById =  function(req , res){
+	console.log("Inside getAttendanceById ==========+++>" , req.body);
 	if(req.body.days){
 		console.log("You are in getAttendanceById function if days are given" , req.body.userId);
 		var someDate = new Date();
@@ -208,7 +209,7 @@ take_attendance.getLogByName = function(req , res){
 
 }
 
-take_attendance.getLogsBetweenDates = function(req , res){
+/*take_attendance.getLogsBetweenDates = function(req , res){
 	console.log(req.body);
 	attendanceModel.aggregate([
 	{									
@@ -231,8 +232,8 @@ take_attendance.getLogsBetweenDates = function(req , res){
 			res.send(foundLogs);
 		}
 	});
-}
-take_attendance.getLogsByNameBySingleDate = function(req , res){
+}*/
+/*take_attendance.getLogsByNameBySingleDate = function(req , res){
 	console.log("getLogsByNameBySingleDate ==>" , req.body );
 	attendanceModel.find({
 		 date : { $eq: moment(req.body.firstDate).format("DD/MM/YYYY")} , userId : { $eq : req.body.id } 
@@ -246,8 +247,8 @@ take_attendance.getLogsByNameBySingleDate = function(req , res){
 		}
 	});
 
-}
-take_attendance.getLogsByNameBetweenDates = function(req , res){
+}*/
+/*take_attendance.getLogsByNameBetweenDates = function(req , res){
 	console.log("Helloooo");
 	console.log("getLogsByNameBetweenDates" , req.body);
 	attendanceModel.find(
@@ -260,7 +261,7 @@ take_attendance.getLogsByNameBetweenDates = function(req , res){
 			res.send(foundLogs);
 		}
 	});
-}
+}*/
 // Needed
 
 take_attendance.getLogBySingleDate = function(req , res){
@@ -298,14 +299,12 @@ take_attendance.getTodaysattendance = function(req , res){
 	});	
 }
 take_attendance.getReportById = function(req , res){
-	
-	console.log("In the success" ,  req.body);
-	var part = req.body.startDate.split("T")[1];
-	// console.log("part ========++>" , part)
-	endDate = req.body.endDate.split("T")[0];
-	// console.log("part ========++>" , endDate)
-	endDate = endDate + "T"  + part;
-	// console.log("end date =====>" , endDate);
+	if(!req.body.flag){
+		console.log("In the success" ,  req.body);
+		var part = req.body.startDate.split("T")[1];
+		endDate = req.body.endDate.split("T")[0];
+		endDate = endDate + "T"  + part;
+	}
 	console.log("In the success" ,  req.body.startDate , endDate);
 	attendanceModel.find(
 		{ date : { $gte: req.body.startDate  , $lte :  endDate } , userId : { $eq : req.body.userId } }
@@ -316,10 +315,6 @@ take_attendance.getReportById = function(req , res){
 			console.log("getting error in line 302",err);
 			res.send(err);
 		}else if(foundLogs.length){
-			require('getmac').getMac(function(err, macAddress){
-				if (err)  throw err
-					console.log("macAddress ======>" , macAddress);
-			});
 			console.log("getting data on line 282", foundLogs);
 			res.send(foundLogs);
 		}else{

@@ -14,9 +14,9 @@ router.post('/get-report-by-id' , takeAttendanceController.getReportById);
 //imported
 router.post('/get-logs-by-single-date' , takeAttendanceController.getLogBySingleDate);
 router.get('/get-logs-by-name/:id' , takeAttendanceController.getLogByName);
-router.post('/get-logs-between-dates' , takeAttendanceController.getLogsBetweenDates );
-router.post('/get-logs-by-name-by-single-date' , takeAttendanceController.getLogsByNameBySingleDate);
-router.post('/get-logs-by-name-between-dates' , takeAttendanceController.getLogsByNameBetweenDates);
+// router.post('/get-logs-between-dates' , takeAttendanceController.getLogsBetweenDates );
+// router.post('/get-logs-by-name-by-single-date' , takeAttendanceController.getLogsByNameBySingleDate);
+// router.post('/get-logs-by-name-between-dates' , takeAttendanceController.getLogsByNameBetweenDates);
 
 
 module.exports = router;
