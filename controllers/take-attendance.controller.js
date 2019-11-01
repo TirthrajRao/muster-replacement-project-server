@@ -271,7 +271,9 @@ take_attendance.getReportById = function(req , res){
 		endDate = endDate + "T"  + part;
 		var StartingDate = moment(req.body.startDate);
         var momentObjEnd = moment(endDate);
-        var resultHours = momentObjEnd.diff(StartingDate, 'days');
+        console.log("Both dates =============>" ,req.body.startDate , endDate ) + 1;
+
+        var resultHours = momentObjEnd.diff(StartingDate, 'days') + 1;
 	}else{
         endDate = req.body.endDate +  "T18:30:00.000Z"; ;
         req.body.startDate = req.body.startDate +  "T18:30:00.000Z";
@@ -290,18 +292,7 @@ take_attendance.getReportById = function(req , res){
 			console.log("getting error in line 302",err);
 			res.send(err);
 		}else if(foundLogs.length){
-			// console.log("getting data on line 282", foundLogs);
-			// var momentObj = moment(req.body.startDate);
-			// var StartingDate = moment(req.body.startDate);
-			// var momentObjEnd = moment(endDate);
-			// var momentObjend = moment(momentObj).format('YYYY-MM-DD ');
-			// console.log("getting data on line 282" ,momentObjStrart , momentObjend);
-        	// var resultHours = momentObjEnd.diff(StartingDate, 'days');
-        	// console.log("result hours ===========++>", resultHours);
-        	// var resultHours = endDate.diff(req.body.startDate, 'days', true);
 			var got = await  attendanceFunction.calculateTimeLog(foundLogs , resultHours , req.body.startDate , endDate);
-			// console.log("Got ==========================>" , got);
-
 			got['foundLogs'] = foundLogs;
 			res.send(got);
 		}else{
