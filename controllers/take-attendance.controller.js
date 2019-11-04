@@ -266,9 +266,9 @@ take_attendance.getTodaysattendance = function(req , res){
 take_attendance.getReportById = function(req , res){
 	if(!req.body.flag){
 		console.log("In the success" ,  req.body);
-		var part = req.body.startDate.split("T")[1];
-		endDate = req.body.endDate.split("T")[0];
-		endDate = endDate + "T"  + part;
+		req.body.startDate = req.body.startDate.split("T")[0] + "T18:30:00.000Z";
+		endDate = req.body.endDate.split("T")[0] + "T18:30:00.000Z";
+		// endDate = endDate + "T"  + part;
 		var StartingDate = moment(req.body.startDate);
         var momentObjEnd = moment(endDate);
         console.log("Both dates =============>" ,req.body.startDate , endDate ) + 1;
