@@ -25,8 +25,8 @@ take_attendance.fillAttendance = function(req , res){
 	// 		console.log("macAddress ======>" , macAddress);
 	// });
 	console.log("req body of fill attendence " , req.body);
-		userModel.findOne({_id : req.body.userId} , (err , foundUser)=>{
-			console.log("found user");
+	userModel.findOne({_id : req.body.userId} , (err , foundUser)=>{
+		console.log("found user");
 		if(err){
 			console.log("error  in finding student" , err);
 			res.status(400).send(err);
@@ -39,20 +39,20 @@ take_attendance.fillAttendance = function(req , res){
 			console.log("Date ==============+++++>" , new Date().toISOString() , "Only Fsyr ====>" , date);
 			var newDate = new Date().toISOString().split("T")[0] + "T18:30:00.000Z";
 			try{
-			attendanceModel.findOne({userId: req.body.userId , date: newDate})
-			.populate('userId')
-			.exec( async (err , foundAttendence)=>{
-				if(err){
-					res.status(500).send(err);
-				}
-				else if(foundAttendence != null){
-					console.log(" foundAttendence ======>" , foundAttendence)
-					var timeLogLength = foundAttendence.timeLog.length - 1;
-					var lastRecord = foundAttendence.timeLog[timeLogLength].out;
-					if(lastRecord !="-"){
-						presentTime = moment().tz("Asia/Calcutta|Asia/Kolkata").format('h:mm:ss a'); 
-						console.log("the persent time whewn we add the new attendence ========>" , presentTime);
-						var arr = {
+				attendanceModel.findOne({userId: req.body.userId , date: newDate})
+				.populate('userId')
+				.exec( async (err , foundAttendence)=>{
+					if(err){
+						res.status(500).send(err);
+					}
+					else if(foundAttendence != null){
+						console.log(" foundAttendence ======>" , foundAttendence)
+						var timeLogLength = foundAttendence.timeLog.length - 1;
+						var lastRecord = foundAttendence.timeLog[timeLogLength].out;
+						if(lastRecord !="-"){
+							presentTime = moment().tz("Asia/Calcutta|Asia/Kolkata").format('h:mm:ss a'); 
+							console.log("the persent time whewn we add the new attendence ========>" , presentTime);
+							var arr = {
 							// in :  moment().tz("Asia/Calcutta|Asia/Kolkata").format('h:mm:ss a')
 							in :  moment().utcOffset("+05:30").format('h:mm:ss a')
 						};
@@ -102,8 +102,8 @@ take_attendance.fillAttendance = function(req , res){
 			});
 
 			}catch(e){
-			console.log(e)	
-		}
+				console.log(e)	
+			}
 		}
 	});
 }
@@ -123,7 +123,7 @@ take_attendance.getAttendanceById =  function(req , res){
 		// console.log("To" , moment(new Date()).format("DD/MM/YYYY"));
 		attendanceModel.find(
 			{ date : { $gte: from  , $lte :  to } , userId : { $eq : req.body.userId } }
-		)
+			)
 		/*.sort({_id : -1})
 		.limit(5)*/
 		.exec(async(err , foundLogs)=>{
@@ -149,7 +149,7 @@ take_attendance.getAttendanceById =  function(req , res){
 		var newDate = new Date().toISOString().split("T")[0] + "T18:30:00.000Z";
 		console.log("You are in getAttendanceById function" , req.body.userId);
 		attendanceModel.find( { date :  newDate   , userId: req.body.userId} 
-		)
+			)
 		.exec((err , foundLogs)=>{
 			if(err){
 				res.send(err);
@@ -270,22 +270,44 @@ take_attendance.getReportById = function(req , res){
 		endDate = req.body.endDate.split("T")[0] + "T18:30:00.000Z";
 		// endDate = endDate + "T"  + part;
 		var StartingDate = moment(req.body.startDate);
-        var momentObjEnd = moment(endDate);
-        console.log("Both dates =============>" ,req.body.startDate , endDate ) + 1;
+		var momentObjEnd = moment(endDate);
+		console.log("Both dates =============>" ,req.body.startDate , endDate ) + 1;
 
-        var resultHours = momentObjEnd.diff(StartingDate, 'days') + 1;
+		var resultHours = momentObjEnd.diff(StartingDate, 'days') + 1;
 	}else{
-        endDate = req.body.endDate +  "T18:30:00.000Z"; ;
-        req.body.startDate = req.body.startDate +  "T18:30:00.000Z";
-        var StartingDate = moment(req.body.startDate);
-        var momentObjEnd = moment(endDate);
-        var resultHours = momentObjEnd.diff(StartingDate, 'days') + 1;
-    }
+		endDate = req.body.endDate +  "T18:30:00.000Z"; 
+		req.body.startDate = req.body.startDate +  "T18:30:00.000Z";
+		var StartingDate = moment(req.body.startDate);
+		var momentObjEnd = moment(endDate);
+		var resultHours = momentObjEnd.diff(StartingDate, 'days') + 1;
+	}
 
 	console.log("In the success" ,  req.body.startDate , endDate);
-	attendanceModel.find(
+	/*attendanceModel.find(
 		{ date : { $gte: req.body.startDate  , $lte :  endDate } , userId : { $eq : req.body.userId } }
-	)
+		)*/
+	attendanceModel.aggregate([
+		{
+			$lookup:
+			{
+				from: "users",
+				localField: "userId",
+				foreignField: "_id",
+				as: "user"
+			}
+		},	
+		{
+			$match : {
+				date : { 
+					$gte:  req.body.startDate,
+					$lte: endDate
+				}, 
+				userId : { 
+					$eq : req.body.userId 
+				}
+			} 
+		}
+	])	
 	.sort({_id : 1})
 	.exec(async (err , foundLogs)=>{
 		if(err){
@@ -293,13 +315,123 @@ take_attendance.getReportById = function(req , res){
 			res.send(err);
 		}else if(foundLogs.length){
 			var got = await  attendanceFunction.calculateTimeLog(foundLogs , resultHours , req.body.startDate , endDate);
+			// var foundLogs = await attendanceFunction.properFormatDate(foundLogs);	
 			got['foundLogs'] = foundLogs;
+
 			res.send(got);
 		}else{
 			console.log("getting nothing")
 			res.send([]);
 		}
 	});
+}
+
+take_attendance.getReportByFlag = function(req , res){
+	req.body.endDate = req.body.endDate.split('T')[0] +   "T18:30:00.000Z"; 
+	console.log("body of get report by flag =====>" , req.body);
+	if(req.body.id == 'All'){
+		console.log("al")
+		attendanceModel.aggregate([
+		{
+			$sort: { 
+				"date": -1 
+			}
+		},	
+		{
+			$lookup:
+			{
+				from: "users",
+				localField: "userId",
+				foreignField: "_id",
+				as: "user"
+			}
+		},	
+		{
+			$match : {
+				date : { 
+					$gte:  new Date(req.body.startDate),
+					$lte: new Date(req.body.endDate)
+				}
+			} 
+		},
+		
+		{
+			$group: {
+				_id: { $dateToString: { format: "%d-%m-%Y", date: "$date" } },
+				data: { $push: "$$ROOT" }
+			}
+		},
+		{
+			$group: {
+				_id: null,
+				data: {
+					$push: {
+						k: "$_id",
+						v: "$data"
+					}
+				}
+			}
+		},
+		{
+			$replaceRoot: {
+				newRoot: { $arrayToObject: "$data" }
+			}
+		}
+		])
+		// .sort({date: -1})
+		.exec(async function (err , foundLogs) {
+			if(err){
+				console.log(err);
+				return(res.status(500).send(err));
+			}else{
+				console.log(123);
+				foundLogs = await attendanceFunction.formatMonthAccordingToDays(foundLogs , req.body.startDate , req.body.endDate);
+				res.status(200).send(foundLogs);
+			}
+		});
+	}else{
+		console.log("Inside ekse");
+		attendanceModel.aggregate(
+			[
+			{
+				$lookup:
+				{
+					from: "users",
+					localField: "userId",
+					foreignField: "_id",
+					as: "user"
+				}
+			},
+			{
+				$match : {
+					date : { 
+						$gte:  new Date(req.body.startDate),
+						$lte: new Date(req.body.endDate)
+					},
+					userId : {
+						$eq: ObjectId(req.body.id)
+					}
+				} 
+			}
+			]
+			)
+		.exec(async(err , foundLogs)=>{
+			if(err){
+				return(res.status(500).send(err));
+			}else{
+				if(foundLogs.length){
+					var StartingDate = moment(req.body.startDate);
+					var momentObjEnd = moment(req.body.endDate);
+					var resultHours = momentObjEnd.diff(StartingDate, 'days') + 1;
+					var got = await  attendanceFunction.calculateTimeLog(foundLogs , resultHours , req.body.startDate , req.body.endDate);
+					got['foundLogs'] = foundLogs;
+					res.send(got);
+				}else{
+					return(res.status(200).send(foundLogs));
+				}
+			}
+		});
+	}
 }
 
 module.exports = take_attendance;

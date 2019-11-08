@@ -90,6 +90,80 @@ const attendanceFunctions = {
 		}
 		return obj
 
+	},
+	properFormatDate(data){
+		console.log("data @228 ===>" , data)
+		return data = data.filter((obj)=>{
+			// console.log("Before date =======>" , obj.date);
+			obj.date = new Date(obj.date);
+			obj.date = moment(obj.date).format("DD/MM/YYYY");
+			console.log("after date =======>" , obj.date);
+			return obj.date;
+		});
+	},
+	formatMonthAccordingToDays(data , startDate , endDate){
+		var tmp = data[0];
+		// console.log(tmp);
+		var keys =  Object.keys(...data);
+		/*if(moment().format('MMMM') == moment(startDate).format('MMMM')){
+			console.log("same month", moment().format('DD'));
+			totalDays = moment().format('DD');
+			console.log("keys ==> " , keys);
+			console.log(moment(startDate).format('DD') - 1);
+			for(var i = 0 ; i < totalDays ; i++){
+				momentDate = moment(startDate).add(i , 'Days');
+				console.log("start fate ==>" , moment(momentDate).utc().format("DD-MM-YYYY"));
+				dateToMatch = moment(momentDate).utc().format("DD-MM-YYYY");
+				if(!keys.includes(dateToMatch)){
+					console.log("dateToMatch" , dateToMatch)	
+					keys.push(dateToMatch);
+					tmp[dateToMatch] = "sunday";
+				}
+			}
+		}else{
+			var totalDaysInMonth = moment(startDate).daysInMonth();
+			console.log("total days in month" , totalDaysInMonth);
+			for(var i = 0 ; i < totalDaysInMonth ; i++){
+				momentDate = moment(startDate).add(i , 'Days');
+				// console.log("start fate ==>" , moment(momentDate).utc().format("DD-MM-YYYY"));
+				dateToMatch = moment(momentDate).utc().format("DD-MM-YYYY");
+				if(!keys.includes(dateToMatch)){
+					// console.log("dateToMatch" , dateToMatch)	
+					keys.push(dateToMatch);
+					tmp[dateToMatch] = "sunday";
+				}
+			}	
+		}
+
+		keys.forEach((key , index)=>{
+			dd = key.split('-')[0];
+			mm = key.split('-')[1];
+			yy = key.split('-')[2];
+			key1 = mm + "-" + dd + "-" + yy;
+			// key1 = key1;
+			// key1 = new Date(key1);
+			keys[index] = key1;
+			console.log(moment(key1).format('DD-MM-YYYY') , Date.parse(keys[index])/* , new Date(key1));
+			// console.log("unsorted Key" , typeof keys[index] , index , Date.parse(keys[index]) , keys[index] , Date.parse(key1) , "====>" ,key1);
+		});*/
+		// console.log("unsorted Key" , new Date(keys[2]));*/
+		keys.sort((a,b)=>new Date(a)-new Date(b));
+		console.log("sorted Key" , keys);
+		var newObject = [];
+		var temp = data[0];
+		for(var i = 0; i < keys.length; i++){
+			var currentDate = keys[i];
+			var obj = {};
+			obj[currentDate] = temp[currentDate]
+			// newObject[currentDate] = temp[currentDate] // main culript 
+			newObject.push(obj);
+		}
+		var obj =  Object.assign({}, ...newObject);
+		var arr = [];
+		arr.push(obj);
+		// console.log("after sorting ",arr)
+		// var limitOfDays = 	
+		return arr;
 	}
 }
 

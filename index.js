@@ -28,8 +28,8 @@ app.use(express.urlencoded({ extended: false }));
 // const secureServer = https.createServer(credentials,app);
 // secureServer.listen(port);
 // console.log("secure server started on 4000");
-
-mongoose.connect('mongodb://localhost:27017/muster_logs', {useNewUrlParser: true , useUnifiedTopology: true}  )
+// 18.130.243.169
+mongoose.connect('mongodb://18.130.243.169:27017/muster_logs', {useNewUrlParser: true , useUnifiedTopology: true}  )
 .then(() => console.log("Congratulations you are connected to Database"))
 .catch(err => console.log(err));
 

@@ -43,6 +43,7 @@ userController.login = function(req,res){
 
 		}
 		else{
+			console.log("foundUser at login time .. ==>" , foundUser);
 			res.status(200).send(foundUser);
 		}
 	});

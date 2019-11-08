@@ -11,6 +11,7 @@ router.post('/get-current-month-logs-count' , takeAttendanceController.getCurren
 router.post('/get-current-month-logs-by-page' , takeAttendanceController.getCurrentMonthLogByPage);
 router.get('/get-todays-day-logs' , takeAttendanceController.getTodaysattendance);
 router.post('/get-report-by-id' , takeAttendanceController.getReportById);
+router.post('/get-report-by-flag' , takeAttendanceController.getReportByFlag);
 //imported
 router.post('/get-logs-by-single-date' , takeAttendanceController.getLogBySingleDate);
 router.get('/get-logs-by-name/:id' , takeAttendanceController.getLogByName);
